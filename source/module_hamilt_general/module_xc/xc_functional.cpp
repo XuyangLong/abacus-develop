@@ -167,6 +167,13 @@ void XC_Functional::set_xc_type(const std::string xc_func_in)
         func_type = 3;
         use_libxc = true;
 	}
+    else if ( xc_func == "SCANL")
+	{
+        func_id.push_back(XC_MGGA_X_SCANL);
+        func_id.push_back(XC_MGGA_C_SCANL);
+        func_type = 3;
+        use_libxc = true;
+	}
     else if ( xc_func == "SCAN0")
 	{
         func_id.push_back(XC_MGGA_X_SCAN);
