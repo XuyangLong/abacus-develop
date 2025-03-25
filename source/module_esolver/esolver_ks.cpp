@@ -2,6 +2,7 @@
 
 #include "module_base/timer.h"
 #include "module_cell/cal_atoms_info.h"
+#include "module_hamilt_general/module_xc/xc_functional.h"
 #include "module_io/cube_io.h"
 #include "module_io/json_output/init_info.h"
 #include "module_io/json_output/output_info.h"
@@ -23,6 +24,8 @@
 #include "module_base/parallel_common.h"
 #include "module_cell/module_paw/paw_cell.h"
 #endif
+
+#include "esolver_ks_pw.h"
 
 namespace ModuleESolver
 {
@@ -56,7 +59,14 @@ ESolver_KS<T, Device>::ESolver_KS()
     {
         fft_device = "cpu";
     }
-    pw_wfc = new ModulePW::PW_Basis_K_Big(fft_device, PARAM.inp.precision);
+    std::string fft_precision = PARAM.inp.precision;
+#ifdef __ENABLE_FLOAT_FFTW
+    if (PARAM.inp.cal_cond && PARAM.inp.esolver_type == "sdft")
+    {
+        fft_precision = "mixing";
+    }
+#endif
+    pw_wfc = new ModulePW::PW_Basis_K_Big(fft_device, fft_precision);
     ModulePW::PW_Basis_K_Big* tmp = static_cast<ModulePW::PW_Basis_K_Big*>(pw_wfc);
 
     // should not use INPUT here, mohan 2024-05-12

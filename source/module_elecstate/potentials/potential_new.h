@@ -170,6 +170,12 @@ class Potential : public PotBase
     {
         return this->v_effective_fixed.data();
     }
+    const ModulePW::PW_Basis *get_rho_basis() const
+    {
+        return this->rho_basis_;
+    }
+    // What about adding a function to get the wfc? 
+    // This is useful for the calculation of the exx energy
 
 
     /// @brief get the value of vloc at G=0;
@@ -214,6 +220,7 @@ class Potential : public PotBase
     const ModuleBase::matrix* vloc_ = nullptr;
     Structure_Factor* structure_factors_ = nullptr;
     surchem* solvent_ = nullptr;
+    bool use_gpu_ = false;
 };
 
 } // namespace elecstate
