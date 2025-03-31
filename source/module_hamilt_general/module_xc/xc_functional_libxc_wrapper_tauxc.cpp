@@ -26,7 +26,7 @@ void XC_Functional_Libxc::tau_xc(
     {
         xc_mgga_exc_vxc(&func,1,&rho,&grho,&lapl_rho,&atau,&s,&v1,&v2,&vlapl_rho,&v3);
 #ifdef __EXX
-        if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+        if (func.info->number == XC_MGGA_X_SCAN || func.info->number == XC_MGGA_X_SCANL && XC_Functional::get_func_type() == 5)
         {
             s *= (1.0 - GlobalC::exx_info.info_global.hybrid_alpha);
             v1 *= (1.0 - GlobalC::exx_info.info_global.hybrid_alpha);

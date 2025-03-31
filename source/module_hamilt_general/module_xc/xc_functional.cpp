@@ -305,7 +305,7 @@ void XC_Functional::set_xc_type(const std::string xc_func_in)
 #endif
 
 #ifndef USE_LIBXC
-    if(xc_func == "SCAN" || xc_func == "HSE" || xc_func == "SCAN0" 
+    if(xc_func == "SCAN" || xc_func == "HSE" || xc_func == "SCAN0" || xc_func == "SCANL"
         || xc_func == "MULLER" || xc_func == "POWER" || xc_func == "WP22" || xc_func == "CWP22")
     {
         ModuleBase::WARNING_QUIT("set_xc_type","to use SCAN, SCAN0, or HSE, LIBXC is required");

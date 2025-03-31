@@ -276,7 +276,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             for( int ir=0; ir< nrxx; ++ir )
             {
 #ifdef __EXX
-                if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+                if (func.info->number == XC_MGGA_X_SCAN || func.info->number == XC_MGGA_X_SCANL && XC_Functional::get_func_type() == 5)
                 {
                     exc[ir] *= (1.0 - XC_Functional::get_hybrid_alpha());
                 }
@@ -294,7 +294,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             for( int ir=0; ir< nrxx; ++ir )
             {
 #ifdef __EXX
-                if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+                if (func.info->number == XC_MGGA_X_SCAN || func.info->number == XC_MGGA_X_SCANL && XC_Functional::get_func_type() == 5)
                 {
                     vrho[ir*nspin+is] *= (1.0 - XC_Functional::get_hybrid_alpha());
                 }
@@ -317,7 +317,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             for( int ir=0; ir< nrxx; ++ir )
             {
 #ifdef __EXX
-                if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+                if (func.info->number == XC_MGGA_X_SCAN || func.info->number == XC_MGGA_X_SCANL && XC_Functional::get_func_type() == 5)
                 {
                     vsigma[ir] *= (1.0 - XC_Functional::get_hybrid_alpha());
                 }
@@ -333,7 +333,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             for( int ir=0; ir< nrxx; ++ir )
             {
 #ifdef __EXX
-                if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+                if (func.info->number == XC_MGGA_X_SCAN || func.info->number == XC_MGGA_X_SCANL && XC_Functional::get_func_type() == 5)
                 {
                     vsigma[ir*3]   *= (1.0 - XC_Functional::get_hybrid_alpha());
                     vsigma[ir*3+1] *= (1.0 - XC_Functional::get_hybrid_alpha());
@@ -379,7 +379,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             for( int ir=0; ir< nrxx; ++ir )
             {
 #ifdef __EXX
-                if (func.info->number == XC_MGGA_X_SCAN && XC_Functional::get_func_type() == 5)
+                if (func.info->number == XC_MGGA_X_SCAN  || func.info->number == XC_MGGA_X_SCANL&& XC_Functional::get_func_type() == 5)
                 {
                     vtau[ir*nspin+is] *= (1.0 - XC_Functional::get_hybrid_alpha());
                 }
