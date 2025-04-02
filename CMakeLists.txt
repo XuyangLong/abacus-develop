@@ -13,7 +13,7 @@ project(
 option(ENABLE_LCAO "Enable LCAO calculation." ON)
 option(ENABLE_DEEPKS "Enable DeePKS functionality" OFF)
 option(ENABLE_MLKEDF "Enable Machine Learning based KEDF for OFDFT" OFF)
-option(ENABLE_LIBXC "Enable LibXC functionality" OFF)
+option(ENABLE_LIBXC "Enable LibXC functionality" ON)
 option(USE_CUDA "Enable support to CUDA for ABACUS." OFF)
 option(ENABLE_FLOAT_FFTW "Enable support to single precision FFTW library." OFF)
 option(USE_ROCM "Enable support to ROCm." OFF)
