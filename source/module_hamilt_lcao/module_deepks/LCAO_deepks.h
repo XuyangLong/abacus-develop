@@ -7,7 +7,6 @@
 #include "deepks_descriptor.h"
 #include "deepks_force.h"
 #include "deepks_fpre.h"
-#include "deepks_hmat.h"
 #include "deepks_orbital.h"
 #include "deepks_orbpre.h"
 #include "deepks_pdm.h"
@@ -15,6 +14,7 @@
 #include "deepks_spre.h"
 #include "deepks_vdelta.h"
 #include "deepks_vdpre.h"
+#include "deepks_vdrpre.h"
 #include "module_base/complexmatrix.h"
 #include "module_base/intarray.h"
 #include "module_base/matrix.h"
@@ -56,10 +56,10 @@ class LCAO_Deepks
   public:
     ///(Unit: Ry) Correction energy provided by NN
     double E_delta = 0.0;
-    ///(Unit: Ry)  \f$tr(\rho H_\delta), \rho = \sum_i{c_{i, \mu}c_{i,\nu}} \f$ (for gamma_only)
+    ///(Unit: Ry)  \f$tr(\rho H_\delta), \rho = \sum_i{c_{i, \mu}c_{i,\nu}} \f$
     double e_delta_band = 0.0;
 
-    /// Correction term to the Hamiltonian matrix: \f$\langle\phi|V_\delta|\phi\rangle\f$ (for gamma only)
+    /// Correction term to the Hamiltonian matrix: \f$\langle\phi|V_\delta|\phi\rangle\f$
     /// The first dimension is for k-points V_delta(k)
     std::vector<std::vector<T>> V_delta;
 
@@ -85,6 +85,9 @@ class LCAO_Deepks
     // saves <phi(0)|alpha(R)> and its derivatives
     // index 0 for itself and index 1-3 for derivatives over x,y,z
     std::vector<hamilt::HContainer<double>*> phialpha;
+
+    // density matrix in real space
+    hamilt::HContainer<double>* dm_r = nullptr;
 
     // projected density matrix
     // [tot_Inl][2l+1][2l+1], here l is corresponding to inl;
@@ -134,6 +137,12 @@ class LCAO_Deepks
 
     /// Allocate memory for correction to Hamiltonian
     void allocate_V_delta(const int nat, const int nks = 1);
+
+    /// Initialize the dm_r container
+    void init_DMR(const UnitCell& ucell,
+                  const LCAO_Orbitals& orb,
+                  const Parallel_Orbitals& pv,
+                  const Grid_Driver& GridD);
 
     //! a temporary interface for cal_e_delta_band
     void dpks_cal_e_delta_band(const std::vector<std::vector<T>>& dm, const int nks);

@@ -21,6 +21,7 @@ template <typename TK>
 void DeePKS_domain::cal_e_delta_band(const std::vector<std::vector<TK>>& dm,
                                      const std::vector<std::vector<TK>>& V_delta,
                                      const int nks,
+                                     const int nspin,
                                      const Parallel_Orbitals* pv,
                                      double& e_delta_band)
 {
@@ -45,31 +46,18 @@ void DeePKS_domain::cal_e_delta_band(const std::vector<std::vector<TK>>& dm,
                 {
                     iic = mu * pv->ncol + nu;
                 }
-                if constexpr (std::is_same<TK, double>::value)
+                for (int is = 0; is < nspin; is++)
                 {
-                    for (int is = 0; is < dm.size(); ++is) // dm.size() == PARAM.inp.nspin
+                    for (int ik = 0; ik < nks / nspin; ik++)
                     {
-                        e_delta_band_tmp += dm[is][nu * pv->nrow + mu] * V_delta[0][iic];
-                    }
-                }
-                else
-                {
-                    for (int ik = 0; ik < nks; ik++)
-                    {
-                        e_delta_band_tmp += dm[ik][nu * pv->nrow + mu] * V_delta[ik][iic];
+                        e_delta_band_tmp += dm[ik + is * nks / nspin][nu * pv->nrow + mu] * V_delta[ik][iic];
                     }
                 }
             }
         }
     }
-    if constexpr (std::is_same<TK, double>::value)
-    {
-        e_delta_band = e_delta_band_tmp;
-    }
-    else
-    {
-        e_delta_band = e_delta_band_tmp.real();
-    }
+    const double* e_delta_band_ptr = reinterpret_cast<const double*>(&e_delta_band_tmp);
+    e_delta_band = e_delta_band_ptr[0]; // real part in complex case
 #ifdef __MPI
     Parallel_Reduce::reduce_all(e_delta_band);
 #endif
@@ -77,16 +65,99 @@ void DeePKS_domain::cal_e_delta_band(const std::vector<std::vector<TK>>& dm,
     return;
 }
 
+template <typename TK, typename TH>
+void DeePKS_domain::collect_h_mat(const Parallel_Orbitals& pv,
+                                  const std::vector<std::vector<TK>>& h_in,
+                                  std::vector<TH>& h_out,
+                                  const int nlocal,
+                                  const int nks)
+{
+    ModuleBase::TITLE("DeePKS_domain", "collect_h_tot");
+
+    // construct the total H matrix
+    for (int k = 0; k < nks; k++)
+    {
+#ifdef __MPI
+        int ir = 0;
+        int ic = 0;
+        for (int i = 0; i < nlocal; i++)
+        {
+            std::vector<TK> lineH(nlocal - i, TK(0.0));
+
+            ir = pv.global2local_row(i);
+            if (ir >= 0)
+            {
+                // data collection
+                for (int j = i; j < nlocal; j++)
+                {
+                    ic = pv.global2local_col(j);
+                    if (ic >= 0)
+                    {
+                        int iic = 0;
+                        if (ModuleBase::GlobalFunc::IS_COLUMN_MAJOR_KS_SOLVER(PARAM.inp.ks_solver))
+                        {
+                            iic = ir + ic * pv.nrow;
+                        }
+                        else
+                        {
+                            iic = ir * pv.ncol + ic;
+                        }
+                        lineH[j - i] = h_in[k][iic];
+                    }
+                }
+            }
+            else
+            {
+                // do nothing
+            }
+
+            Parallel_Reduce::reduce_all(lineH.data(), nlocal - i);
+
+            for (int j = i; j < nlocal; j++)
+            {
+                h_out[k](i, j) = lineH[j - i];
+                h_out[k](j, i) = h_out[k](i, j); // H is a symmetric matrix
+            }
+        }
+#else
+        for (int i = 0; i < nlocal; i++)
+        {
+            for (int j = i; j < nlocal; j++)
+            {
+                h_out[k](i, j) = h_in[k][i * nlocal + j];
+                h_out[k](j, i) = h_out[k](i, j); // H is a symmetric matrix
+            }
+        }
+#endif
+    }
+}
+
 template void DeePKS_domain::cal_e_delta_band<double>(const std::vector<std::vector<double>>& dm,
                                                       const std::vector<std::vector<double>>& V_delta,
                                                       const int nks,
+                                                      const int nspin,
                                                       const Parallel_Orbitals* pv,
                                                       double& e_delta_band);
 template void DeePKS_domain::cal_e_delta_band<std::complex<double>>(
     const std::vector<std::vector<std::complex<double>>>& dm,
     const std::vector<std::vector<std::complex<double>>>& V_delta,
     const int nks,
+    const int nspin,
     const Parallel_Orbitals* pv,
     double& e_delta_band);
+
+template void DeePKS_domain::collect_h_mat<double, ModuleBase::matrix>(
+    const Parallel_Orbitals& pv,
+    const std::vector<std::vector<double>>& h_in,
+    std::vector<ModuleBase::matrix>& h_out,
+    const int nlocal,
+    const int nks);
+
+template void DeePKS_domain::collect_h_mat<std::complex<double>, ModuleBase::ComplexMatrix>(
+    const Parallel_Orbitals& pv,
+    const std::vector<std::vector<std::complex<double>>>& h_in,
+    std::vector<ModuleBase::ComplexMatrix>& h_out,
+    const int nlocal,
+    const int nks);
 
 #endif

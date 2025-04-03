@@ -1010,16 +1010,23 @@ TEST_F(UcellTest, PrintTauDirect)
     UcellTestPrepare utp = UcellTestLib["C1H2-Index"];
     PARAM.input.relax_new = utp.relax_new;
     ucell = utp.SetUcellInfo();
-    GlobalV::ofs_running.open("print_tau_direct");
     EXPECT_EQ(ucell->Coordinate, "Direct");
-    unitcell::print_tau(ucell->atoms,ucell->Coordinate,ucell->ntype,ucell->lat0);
-    GlobalV::ofs_running.close();
+
+    // open a file
+    std::ofstream ofs("print_tau_direct");
+    unitcell::print_tau(ucell->atoms,ucell->Coordinate,ucell->ntype,ucell->lat0,ofs);
+    ofs.close();
+ 
+    // readin the data
     std::ifstream ifs;
     ifs.open("print_tau_direct");
     std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     EXPECT_THAT(str, testing::HasSubstr("DIRECT COORDINATES"));
-    EXPECT_THAT(str, testing::HasSubstr("taud_C1            0.1000000000        0.1000000000        0.1000000000"));
+    EXPECT_THAT(str, testing::HasSubstr("       C     0.100     0.100     0.100   0.000   0.100   0.100   0.100"));
+    EXPECT_THAT(str, testing::HasSubstr("       H     0.150     0.150     0.150   0.000   0.100   0.100   0.100"));
     ifs.close();
+
+    // remove the file
     remove("print_tau_direct");
 }
 
@@ -1028,16 +1035,23 @@ TEST_F(UcellTest, PrintTauCartesian)
     UcellTestPrepare utp = UcellTestLib["C1H2-Cartesian"];
     PARAM.input.relax_new = utp.relax_new;
     ucell = utp.SetUcellInfo();
-    GlobalV::ofs_running.open("print_tau_Cartesian");
     EXPECT_EQ(ucell->Coordinate, "Cartesian");
-    unitcell::print_tau(ucell->atoms,ucell->Coordinate,ucell->ntype,ucell->lat0);
-    GlobalV::ofs_running.close();
+
+    // open a file
+    std::ofstream ofs("print_tau_Cartesian");
+    unitcell::print_tau(ucell->atoms,ucell->Coordinate,ucell->ntype,ucell->lat0,ofs);
+    ofs.close();
+
+    // readin the data
     std::ifstream ifs;
     ifs.open("print_tau_Cartesian");
     std::string str((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     EXPECT_THAT(str, testing::HasSubstr("CARTESIAN COORDINATES"));
-    EXPECT_THAT(str, testing::HasSubstr("tauc_C1            1.0000000000        1.0000000000        1.0000000000"));
+    EXPECT_THAT(str, testing::HasSubstr("       C     1.000     1.000     1.000   0.000   0.000   0.000   0.000"));
+    EXPECT_THAT(str, testing::HasSubstr("       H     1.500     1.500     1.500   0.000   0.000   0.000   0.000"));
     ifs.close();
+
+    // remove the file
     remove("print_tau_Cartesian");
 }
 
@@ -1157,7 +1171,7 @@ TEST_F(UcellTestReadStru, ReadAtomSpecies)
     PARAM.input.basis_type = "lcao";
     PARAM.sys.deepks_setorb = true;
     EXPECT_NO_THROW(unitcell::read_atom_species(ifa, ofs_running,*ucell));
-    EXPECT_NO_THROW(unitcell::read_lattice_constant(ifa, ofs_running,ucell->lat));
+    EXPECT_NO_THROW(unitcell::read_lattice_constant(ifa, ofs_running, ucell->lat));
     EXPECT_DOUBLE_EQ(ucell->latvec.e11, 4.27957);
     EXPECT_DOUBLE_EQ(ucell->latvec.e22, 4.27957);
     EXPECT_DOUBLE_EQ(ucell->latvec.e33, 4.27957);
@@ -1171,7 +1185,7 @@ TEST_F(UcellTestReadStru, ReadAtomSpeciesWarning1)
     std::string fn = "./support/STRU_MgO_Warning1";
     std::ifstream ifa(fn.c_str());
     std::ofstream ofs_running;
-    ofs_running.open("read_atom_species.tmp");
+    ofs_running.open("read_atom_species.txt");
     ucell->ntype = 2;
     ucell->atoms = new Atom[ucell->ntype];
     ucell->set_atom_flag = true;
@@ -1181,7 +1195,7 @@ TEST_F(UcellTestReadStru, ReadAtomSpeciesWarning1)
     EXPECT_THAT(output, testing::HasSubstr("unrecongnized pseudo type."));
     ofs_running.close();
     ifa.close();
-    remove("read_atom_species.tmp");
+    //remove("read_atom_species.txt");
 }
 
 TEST_F(UcellTestReadStru, ReadLatticeConstantWarning1)
